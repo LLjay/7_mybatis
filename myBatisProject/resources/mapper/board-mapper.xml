@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="boardMapper">
+	<resultMap id="boardResultSet" type="Board">
+			<!-- ResultSet에 있는 걸 꺼내서 넣기 위한 중간 과정 -->
+		<result column="board_no" property="boardNo"/>
+		<result column="board_title" property="boardTitle"/>
+		<result column="user_id" property="boardWriter"/>
+		<result column="count" property="count"/>
+		<result column="create_date" property="createDate"/>
+		<result column="board_content" property="boardContent"/>
+		<!-- 값이 없으면 null을 집어 넣어주기 때문에 미리 넣어줘도 됨 -->
+	</resultMap>
+	<select id="selectListCount" resultType="_int">
+		SELECT COUNT(*)
+		FROM BOARD
+		WHERE STATUS = 'Y'
+	</select>
+	<select id="selectList" resultMap="boardResultSet">
+		 SELECT BOARD_NO,
+				BOARD_TITLE,
+				USER_ID,
+				COUNT,
+				CREATE_DATE
+		 FROM BOARD B
+		 JOIN MEMBER ON(BOARD_WRITER = USER_NO)
+		 WHERE B.STATUS = 'Y'
+		 ORDER BY BOARD_NO DESC
+	</select>
+</mapper>
