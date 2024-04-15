@@ -1,11 +1,13 @@
 package com.kh.mybatis.board.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.apache.ibatis.session.SqlSession;
 
 import com.kh.mybatis.board.model.dao.BoardDao;
 import com.kh.mybatis.board.model.vo.Board;
+import com.kh.mybatis.board.model.vo.Reply;
 import com.kh.mybatis.common.template.Template;
 import com.kh.mybatis.common.vo.PageInfo;
 
@@ -28,7 +30,53 @@ public class BoardServiceImpl implements BoardService{
 		ArrayList<Board> list = bDao.selectList(sqlSession, pi);
 		
 		sqlSession.close();
-		return null;
+		return list;
+	}
+
+	@Override
+	public int selectSearchCount(HashMap<String, String> map) {
+		SqlSession sqlSession = Template.getSqlSession();
+		int searchCount = bDao.selectSearchCount(sqlSession, map);
+		
+		sqlSession.close();
+		
+		return searchCount;
+	}
+
+	@Override
+	public ArrayList<Board> selectSearchList(HashMap<String, String> map, PageInfo pi) {
+		SqlSession sqlSession = Template.getSqlSession();
+		ArrayList<Board> list = bDao.selectSearchList(sqlSession, map, pi);
+		
+		sqlSession.close();
+		return list;
+	}
+
+	@Override
+	public Board increaseCount(int boardNo) {
+		SqlSession sqlSession = Template.getSqlSession();
+		int result = new BoardDao().increaseCount(sqlSession, boardNo);
+		Board b = null;
+		
+		if (result > 0) {
+			sqlSession.commit();
+			b = new BoardDao().selectBoard(sqlSession, boardNo);
+		} else {
+			sqlSession.rollback();
+//			하나 업데이트 하는 거니까 안 해줘도 되긴 함
+		}
+		
+		sqlSession.close();
+		return b;
+	}
+
+	@Override
+	public ArrayList<Reply> selectReplyList(int boardNo) {
+		SqlSession sqlSession = Template.getSqlSession();
+		ArrayList<Reply> list = bDao.selectReplyList(sqlSession, boardNo);
+		
+		sqlSession.close();
+		return list;
 	}
 	
 	

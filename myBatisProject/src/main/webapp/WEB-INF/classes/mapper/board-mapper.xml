@@ -14,6 +14,12 @@
 		<result column="board_content" property="boardContent"/>
 		<!-- 값이 없으면 null을 집어 넣어주기 때문에 미리 넣어줘도 됨 -->
 	</resultMap>
+	<resultMap id="replyResultSet" type="Reply">
+		<result column="reply_no" property="replyNo"/>
+		<result column="user_id" property="replyWriter"/>
+		<result column="reply_content" property="replyContent"/>
+		<result column="create_date" property="createDate"/>
+	</resultMap>
 	<select id="selectListCount" resultType="_int">
 		SELECT COUNT(*)
 		FROM BOARD
@@ -29,5 +35,80 @@
 		 JOIN MEMBER ON(BOARD_WRITER = USER_NO)
 		 WHERE B.STATUS = 'Y'
 		 ORDER BY BOARD_NO DESC
+	</select>
+	<select id="selectSearchCount" resultType="_int">
+		SELECT COUNT(*)
+		FROM BOARD B
+		JOIN MEMBER ON (BOARD_WRITER = USER_NO)
+		WHERE B.STATUS = 'Y'
+		<!-- 액션태그 같지만 마이바티스에서 지원하는 전혀 다른 if문 -->
+		<!-- 동적 쿼리, 결과에 따라 어떤 게 실행될지 모르는 쿼리 -->
+		<!-- 마이바티스는 동적 쿼리 지원 -->
+		<if test="condition == 'writer'">
+		AND USER_ID
+		</if>
+		<if test="condition == 'title'">
+		AND BOARD_TITLE
+		</if>
+		<if test="condition == 'content'">
+		AND BOARD_CONTENT
+		</if>
+			LIKE '%' || #{keyword} || '%'
+	</select>
+	<select id="selectSearchList" resultMap="boardResultSet">
+	<!-- 나중에 수정 삭제 하려면 식별자 필요하므로 출력은 안 하더라도 그냥 번호도 같이 가져와주는 게 좋음 -->
+		 SELECT BOARD_NO,
+				BOARD_TITLE,
+				USER_ID,
+				COUNT,
+				CREATE_DATE
+		 FROM BOARD B
+		 JOIN MEMBER ON(BOARD_WRITER = USER_NO)
+		 WHERE B.STATUS = 'Y'
+		 <choose>
+		 	<when test="condition == 'writer'">
+		 		AND USER_ID
+		 	</when>
+		 	<when test="condition == 'title'">
+		 		AND BOARD_TITLE
+		 	</when>
+		 	<otherwise>
+		 		AND BOARD_CONTENT
+		 	</otherwise>
+		 </choose>
+		 LIKE '%' || #{keyword} || '%'
+		 ORDER BY BOARD_NO DESC
+	</select>
+	<update id="increaseCount" parameterType="_int"> <!-- 이건 왜 resultType 안 쓰지? -->
+		UPDATE BOARD
+		SET COUNT = COUNT + 1
+		WHERE BOARD_NO = #{boardNo}
+		AND STATUS = 'Y'
+	</update>
+	<!-- 전달 받은 int 값 있음 -->
+	<select id="selectBoard" parameterType="_int" resultMap="boardResultSet">
+		 SELECT BOARD_NO,
+				BOARD_TITLE,
+				USER_ID,
+				COUNT,
+				CREATE_DATE,
+				BOARD_CONTENT
+		 FROM BOARD B
+		 JOIN MEMBER ON(BOARD_WRITER = USER_NO)
+		 WHERE B.STATUS = 'Y'
+		 AND BOARD_NO = #{boardNo}
+	</select>
+	<select id="selectReplyList" parameterType="_int" resultMap="replyResultSet">
+	<!-- parameterType은 생략 가능 -->
+	<!-- resultType의 기준은 result가 있을 때...? -->
+		SELECT REPLY_NO,
+			   USER_ID,
+			   REPLY_CONTENT,
+			   CREATE_DATE
+		  FROM REPLY R
+		  JOIN MEMBER ON (REPLY_WRITER = USER_NO)
+		 WHERE REF_BNO = #{boardNo}
+		   AND R.STATUS = 'Y'
+	  ORDER BY REPLY_NO DESC
 	</select>
 </mapper>

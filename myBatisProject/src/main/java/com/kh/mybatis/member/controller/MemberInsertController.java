@@ -30,7 +30,9 @@ public class MemberInsertController extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		request.setCharacterEncoding("UTF-8");
+		// request.setCharacterEncoding("UTF-8");
+//		필터 객체를 이용해 서블릿에서 오는 걸 중간에서 가로채서 인코딩도 해주고 로그인 되어 있는지 검사도 해줄 것
+		
 		
 		String userId = request.getParameter("userId");
 		String userPwd = request.getParameter("userPwd");
